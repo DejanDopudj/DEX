@@ -6,7 +6,7 @@ module.exports = async function(deployer) {
 
     const token = await Token.deployed();
 
-    await deployer.deploy(Exchange);
+    await deployer.deploy(Exchange,token.address);
     const exchange = await Exchange.deployed();
 
     await token.transfer(exchange.address, '1000000000000000000000000')
