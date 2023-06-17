@@ -51,36 +51,57 @@ contract('Exchange', (accounts) => {
         })
     })
 
-/*
-    describe('Buy tokens', async() => {
+    describe('Buy tokens2', async() => {
         it('allows user to purchase tokens', async() => {
-            await exchange.buyTokens({from: accounts[1], value: tokens('1')})
+            await exchange.transferAmountForFree('500',{from: accounts[1]})
             let investorBalance = await token.balanceOf(accounts[1]);
-            assert.equal(investorBalance.toString(), tokens('100'))
+            assert.equal(investorBalance.toString(), '500')
 
             let exchangeBalance = await token.balanceOf(exchange.address);
-            assert.equal(exchangeBalance.toString(), tokens('999900'))
-
-            let exchangeBalanceEther = await web3.eth.getBalance(exchange.address);
-            assert.equal(exchangeBalanceEther.toString(), tokens('1'))
+            assert.equal(exchangeBalance.toString(), '500')
         })
     })
 
     describe('Sell tokens', async() => {
         it('allows user to sell tokens', async() => {
-            await token.approve(exchange.address, tokens('100'), {from: accounts[1]})
-            await exchange.sellTokens(tokens('100'), {from: accounts[1]});
+
+            let investorBalanceStable5 = await stableToken.balanceOf(accounts[1]);
+            assert.equal(investorBalanceStable5.toString(), '0')
+
+            await token.approve(exchange.address, '100', {from: accounts[1]})
+            await exchange.sellTokens('100', {from: accounts[1]});
 
 
             let investorBalance = await token.balanceOf(accounts[1]);
-            assert.equal(investorBalance.toString(), tokens('0'))
+            assert.equal(investorBalance.toString(), '400')
+
+            let investorBalanceStable = await stableToken.balanceOf(accounts[1]);
+            assert.equal(investorBalanceStable.toString(), '83')
+
 
             let exchangeBalance = await token.balanceOf(exchange.address);
-            assert.equal(exchangeBalance.toString(), tokens('1000000'))
+            assert.equal(exchangeBalance.toString(), '600')
 
-            let exchangeBalanceEther = await web3.eth.getBalance(exchange.address);
-            assert.equal(exchangeBalanceEther.toString(), tokens('0'))
+            
+            let exchangeBalanceStable = await stableToken.balanceOf(exchange.address);
+            assert.equal(exchangeBalanceStable.toString(), '417')
         })
-    })*/
+    })
+    
+    describe('Buy tokens', async() => {
+        it('allows user to purchase tokens', async() => {
+            await stableToken.approve(exchange.address, '83', {from: accounts[1]})
+            await exchange.buyTokens('83', {from: accounts[1]});
+
+            let investorBalance = await token.balanceOf(accounts[1]);
+            assert.equal(investorBalance.toString(), '499')
+
+            let exchangeBalance = await stableToken.balanceOf(exchange.address);
+            assert.equal(exchangeBalance.toString(), '500')
+
+            let exchangeBalanceToken = await token.balanceOf(exchange.address);
+            assert.equal(exchangeBalanceToken.toString(), '501')
+        })
+    })
 
 })
