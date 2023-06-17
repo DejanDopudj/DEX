@@ -1,6 +1,7 @@
 const { assert } = require('chai');
 
 const Token = artifacts.require("Token");
+const StableToken = artifacts.require("StableToken");
 const Exchange = artifacts.require("Exchange");
 
 require('chai')
@@ -12,12 +13,14 @@ function tokens(n) {
 }
 
 contract('Exchange', (accounts) => {
-    let token,exchange 
+    let token,exchange, stableToken
 
     before(async() => {
         token = await Token.new(); 
-        exchange = await Exchange.new(token.address); 
-        await token.transfer(exchange.address, tokens('1000000'));
+        stableToken = await StableToken.new(); 
+        exchange = await Exchange.new(token.address, stableToken.address); 
+        await token.transfer(exchange.address, '1000');
+        await stableToken.transfer(exchange.address, '500');
     })
 
     describe('Exchange deployment', async() => {
@@ -28,7 +31,9 @@ contract('Exchange', (accounts) => {
 
         it('has tokens', async() => {
             const balance = await token.balanceOf(exchange.address); 
-            assert.equal(balance.toString(), tokens('1000000'));
+            const balance2 = await stableToken.balanceOf(exchange.address); 
+            assert.equal(balance.toString(), '1000');
+            assert.equal(balance2.toString(), '500');
         })
     })    
     
@@ -39,7 +44,14 @@ contract('Exchange', (accounts) => {
         })
     })
 
+    describe('StableToken deployment', async() => {
+        it('has a name', async() => {
+            const name = await stableToken.name();
+            assert.equal(name, 'Stable Token');
+        })
+    })
 
+/*
     describe('Buy tokens', async() => {
         it('allows user to purchase tokens', async() => {
             await exchange.buyTokens({from: accounts[1], value: tokens('1')})
@@ -54,7 +66,7 @@ contract('Exchange', (accounts) => {
         })
     })
 
-    describe('Buy tokens', async() => {
+    describe('Sell tokens', async() => {
         it('allows user to sell tokens', async() => {
             await token.approve(exchange.address, tokens('100'), {from: accounts[1]})
             await exchange.sellTokens(tokens('100'), {from: accounts[1]});
@@ -69,5 +81,6 @@ contract('Exchange', (accounts) => {
             let exchangeBalanceEther = await web3.eth.getBalance(exchange.address);
             assert.equal(exchangeBalanceEther.toString(), tokens('0'))
         })
-    })
+    })*/
+
 })

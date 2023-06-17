@@ -1,9 +1,9 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-contract Token {
-    string  public name = "Custom Token";
-    string  public symbol = "T";
-    uint256 public totalSupply = 1000;
+contract StableToken {
+    string  public name = "Stable Token";
+    string  public symbol = "ST";
+    uint256 public totalSupply = 500;
     uint8   public decimals = 18;
 
     event Transfer(
