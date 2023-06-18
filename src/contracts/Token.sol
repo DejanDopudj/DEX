@@ -1,10 +1,12 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 contract Token {
+    uint public totalSupply = 1000;
+    mapping(address => uint) public balanceOf;
+    mapping(address => mapping(address => uint)) public allowance;
     string  public name = "Custom Token";
     string  public symbol = "T";
-    uint256 public totalSupply = 1000;
-    uint8   public decimals = 18;
+    uint8 public decimals = 18;
 
     event Transfer(
         address indexed _from,
@@ -17,9 +19,6 @@ contract Token {
         address indexed _spender,
         uint256 _value
     );
-
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
 
     constructor() public {
         balanceOf[msg.sender] = totalSupply;
@@ -47,5 +46,17 @@ contract Token {
         allowance[_from][msg.sender] -= _value;
         emit Transfer(_from, _to, _value);
         return true;
+    }
+    
+    function mint(uint amount) external {
+        balanceOf[msg.sender] += amount;
+        totalSupply += amount;
+        emit Transfer(address(0), msg.sender, amount);
+    }
+
+    function burn(uint amount) external {
+        balanceOf[msg.sender] -= amount;
+        totalSupply -= amount;
+        emit Transfer(msg.sender, address(0), amount);
     }
 }

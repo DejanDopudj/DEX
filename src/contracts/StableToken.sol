@@ -1,10 +1,12 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 contract StableToken {
+    uint public totalSupply = 500;
+    mapping(address => uint) public balanceOf;
+    mapping(address => mapping(address => uint)) public allowance;
     string  public name = "Stable Token";
     string  public symbol = "ST";
-    uint256 public totalSupply = 500;
-    uint8   public decimals = 18;
+    uint8 public decimals = 18;
 
     event Transfer(
         address indexed _from,
@@ -17,9 +19,6 @@ contract StableToken {
         address indexed _spender,
         uint256 _value
     );
-
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
 
     constructor() public {
         balanceOf[msg.sender] = totalSupply;
@@ -47,5 +46,17 @@ contract StableToken {
         allowance[_from][msg.sender] -= _value;
         emit Transfer(_from, _to, _value);
         return true;
+    }
+
+    function mint(uint amount) external {
+        balanceOf[msg.sender] += amount;
+        totalSupply += amount;
+        emit Transfer(address(0), msg.sender, amount);
+    }
+
+    function burn(uint amount) external {
+        balanceOf[msg.sender] -= amount;
+        totalSupply -= amount;
+        emit Transfer(msg.sender, address(0), amount);
     }
 }
