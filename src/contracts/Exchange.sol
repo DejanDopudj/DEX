@@ -54,7 +54,8 @@ contract Exchange{
 
     function invest(uint _amount, uint _tokenName) public{
         _tokenName == 0 ? token.transferFrom(msg.sender, address(this), _amount) : stableToken.transferFrom(msg.sender, address(this), _amount); 
-        tokenInvestments[_tokenName].investors.push(msg.sender);
+        if(tokenInvestments[_tokenName].investments[msg.sender] == 0)
+            tokenInvestments[_tokenName].investors.push(msg.sender);
         tokenInvestments[_tokenName].investments[msg.sender] += _amount;
         tokenInvestments[_tokenName].totalInvestment += _amount;
     }    
