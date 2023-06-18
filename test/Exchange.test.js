@@ -27,9 +27,9 @@ contract('Exchange', (accounts) => {
         await stableToken.transfer(exchange.address, '400');
         
         await token.approve(exchange.address, '100', {from: accounts[2]})
-        await exchange.investTokens('100', {from: accounts[2]});
+        await exchange.invest('100',0, {from: accounts[2]});
         await stableToken.approve(exchange.address, '100', {from: accounts[2]})
-        await exchange.investStableTokens('100', {from: accounts[2]});
+        await exchange.invest('100',1, {from: accounts[2]});
     })
 
     describe('Exchange deployment', async() => {

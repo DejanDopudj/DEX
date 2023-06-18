@@ -7,19 +7,19 @@ contract Exchange{
     string public name = "Swap Exchange";
     Token public token;
     StableToken public stableToken;
-    mapping(address => uint256) public tokenInvestments;
-    mapping(address => uint256) public stableTokenInvestments;
-    address[] public tokenInvestors;
-    address[] public stableTokenInvestors;
-    uint256 public tokenTotalInvestment;
-    uint256 public stableTokenTotalInvestment;
-
+    mapping(uint => Invest) public tokenInvestments;
     
-
+    struct Invest{
+        mapping(address => uint256) investments;
+        address[] investors;
+        uint256  totalInvestment;
+    }
 
     constructor(Token _token, StableToken _stableToken) public {
         token = _token;
         stableToken = _stableToken;
+        tokenInvestments[0].totalInvestment = 0;
+        tokenInvestments[1].totalInvestment = 0;
     }
 
     function buyTokens(uint _amount) public{
@@ -30,7 +30,7 @@ contract Exchange{
         stableToken.transferFrom(msg.sender, address(this), _amount);
         uint returnAmount = tokenBalance - tokenLeft;
         token.transfer(msg.sender, returnAmount*95/100);
-        distributeTokenInvestorRewards(returnAmount); 
+        distributeInvestorRewards(returnAmount, 0); 
     }
 
     function sellTokens(uint _amount) public{
@@ -41,47 +41,36 @@ contract Exchange{
         token.transferFrom(msg.sender, address(this), _amount);
         uint returnAmount = stableTokenBalance - stableTokenLeft;
         stableToken.transfer(msg.sender, returnAmount*95/100);
-        distributeStableTokenInvestorRewards(returnAmount);
+        distributeInvestorRewards(returnAmount, 1);
     }
 
-    function investTokens(uint _amount) public{
-        token.transferFrom(msg.sender, address(this), _amount);
-        tokenInvestors.push(msg.sender);
-        tokenInvestments[msg.sender] += _amount;
-        tokenTotalInvestment += _amount;
-    }    
     
+    function investTokens(uint _amount) public{
+        invest(_amount, 0);
+    }    
     function investStableTokens(uint _amount) public{
-        stableToken.transferFrom(msg.sender, address(this), _amount);
-        stableTokenInvestors.push(msg.sender);
-        stableTokenInvestments[msg.sender] += _amount;
-        stableTokenTotalInvestment += _amount;
-    }
+        invest(_amount, 1);
+    }    
+
+    function invest(uint _amount, uint _tokenName) public{
+        _tokenName == 0 ? token.transferFrom(msg.sender, address(this), _amount) : stableToken.transferFrom(msg.sender, address(this), _amount); 
+        tokenInvestments[_tokenName].investors.push(msg.sender);
+        tokenInvestments[_tokenName].investments[msg.sender] += _amount;
+        tokenInvestments[_tokenName].totalInvestment += _amount;
+    }    
 
     function sayHello() view public returns (address) {
-        return tokenInvestors[0];
+        return tokenInvestments[0].investors[0];
     }
 
-    function distributeTokenInvestorRewards(uint256 _tokenAmount) internal {
+    function distributeInvestorRewards(uint256 _tokenAmount, uint _tokenName) internal {
         uint256 rewards = (_tokenAmount * 5) / 100;
 
-        for (uint i=0; i < tokenInvestors.length; i++) {
-            address investorAddress = tokenInvestors[i];
-            uint256 investorPercentage = (tokenInvestments[investorAddress] * 100) / tokenTotalInvestment;
+        for (uint i=0; i < tokenInvestments[_tokenName].investors.length; i++) {
+            address investorAddress = tokenInvestments[_tokenName].investors[i];
+            uint256 investorPercentage = (tokenInvestments[_tokenName].investments[investorAddress] * 100) / tokenInvestments[_tokenName].totalInvestment;
             uint256 investorReward = (rewards * investorPercentage) / 100;
-            token.transfer(investorAddress, investorReward);
-        }
-    }
-
-
-    function distributeStableTokenInvestorRewards(uint256 _tokenAmount) internal {
-        uint256 rewards = (_tokenAmount * 5) / 100;
-
-        for (uint i=0; i < stableTokenInvestors.length; i++) {
-            address investorAddress = stableTokenInvestors[i];
-            uint256 investorPercentage = (stableTokenInvestments[investorAddress] * 100) / stableTokenTotalInvestment;
-            uint256 investorReward = (rewards * investorPercentage) / 100;
-            stableToken.transfer(investorAddress, investorReward);
+            _tokenName == 0 ? token.transfer(investorAddress, investorReward) : stableToken.transfer(investorAddress, investorReward);
         }
     }
 
