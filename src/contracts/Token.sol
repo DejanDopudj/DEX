@@ -1,7 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 contract Token {
-    uint public totalSupply = 1000;
+    uint public totalSupply = 1100;
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
     string  public name = "Custom Token";
