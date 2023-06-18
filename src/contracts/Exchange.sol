@@ -65,7 +65,7 @@ contract Exchange{
     }
 
     function distributeInvestorRewards(uint256 _tokenAmount, uint _tokenName) internal {
-        uint256 rewards = (_tokenAmount * 5) / 100;
+        uint256 rewards = _tokenAmount - (_tokenAmount * 95) / 100;
 
         for (uint i=0; i < tokenInvestments[_tokenName].investors.length; i++) {
             address investorAddress = tokenInvestments[_tokenName].investors[i];

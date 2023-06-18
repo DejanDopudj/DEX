@@ -1,7 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 contract StableToken {
-    uint public totalSupply = 550;
+    uint public totalSupply = 100005000;
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
     string  public name = "Stable Token";
