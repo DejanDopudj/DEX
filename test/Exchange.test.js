@@ -64,8 +64,8 @@ contract('Exchange', (accounts) => {
         })
     })
 
-    describe('Buy tokens2', async() => {
-        it('allows user to purchase tokens', async() => {
+    describe('Check balance', async() => {
+        it('checks balance', async() => {
             let investorBalance = await token.balanceOf(accounts[1]);
             assert.equal(investorBalance.toString(), '10000')
 
