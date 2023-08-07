@@ -22,6 +22,23 @@ contract Exchange{
         tokenInvestments[1].totalInvestment = 0;
     }
 
+    function getValue(uint _amount, bool isStableToken) public returns (uint){
+        uint tokenBalance = token.balanceOf(address(this));
+        uint stableTokenBalance = stableToken.balanceOf(address(this)); 
+        uint product = tokenBalance * stableTokenBalance;
+        uint tokenLeft;
+        uint returnAmount;
+        if(!isStableToken){
+            tokenLeft = product/(stableTokenBalance + _amount) + (product % (stableTokenBalance + _amount) > 0 ? 1 : 0);
+            returnAmount = tokenBalance - tokenLeft;
+        }
+        else{
+            tokenLeft = product/(tokenBalance + _amount) + (product % (tokenBalance + _amount) > 0 ? 1 : 0);
+            returnAmount = stableTokenBalance - tokenLeft;
+        }
+        return returnAmount;
+    }
+
     function buyTokens(uint _amount) public{
         uint tokenBalance = token.balanceOf(address(this));
         uint stableTokenBalance = stableToken.balanceOf(address(this)); 
