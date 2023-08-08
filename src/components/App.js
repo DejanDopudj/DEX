@@ -13,14 +13,27 @@ class App extends Component {
     await this.loadWeb3()
     await this.loadAddress()
     await this.loadContracts()
-    await this.convert()
   }
 
-  async convert() {
-    let stableTokensInExchange = await this.state.exchange.methods.getValue(1000,this.state.isSell).call()
-    this.setState({stableTokensInExchange: parseInt(stableTokensInExchange.toHexString(), 16)})
-    let tokensInExchange = await this.state.exchange.methods.getValue(1000,!this.state.isSell).call()
-    this.setState({tokensInExchange: parseInt(tokensInExchange.toHexString(), 16)})
+  convert = async (e) => {
+    if (e.key === 'Enter') {
+      console.log(e.target.id,"EWQEQWLJI:WQELKWEQQ")
+      console.log('do validate');
+      
+      const value = document.getElementById(e.target.id).value;
+      
+      let resultId, result;
+      if(e.target.id == "convertT"){
+        resultId = "convertST";
+        result = await this.state.exchange.methods.getValue(value, true).call();
+      }
+      else{
+        resultId = "convertT";
+        result = await this.state.exchange.methods.getValue(value, false).call();
+      }
+      
+      document.getElementById(resultId).value = result;
+    }
   }
 
   async loadAddress(){
@@ -128,17 +141,24 @@ class App extends Component {
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '-50%' }}>
-            <p>value 1000T = {this.state.stableTokensInExchange}ST</p>
+            <p>value 100T = {this.state.stableTokensInExchange}ST</p>
             <p>Balance: {this.state.tokenBalance} T</p>
             <p>Balance: {this.state.stableTokenBalance} ST</p>
-            <button onClick={this.toggleMode} style={{ padding: '5px 10px' }}>
-                {isSell ? 'Sell' : 'Buy'}              
-              </button><br></br>
-              <button onClick={this.convert} style={{ padding: '5px 10px' }}>
-                Convert
-            </button><br></br>
+            <button onClick={this.buyTokens} style={{ padding: '5px 10px' }}>
+                Buy T              
+              </button>
+            <button onClick={this.sellTokens} style={{ padding: '5px 10px' }}>
+                Buy ST              
+              </button>
+            <br></br>
+            <input id="convertT" placeholder = "T"  onKeyDown={this.convert}></input>
+            <input id="convertST" placeholder = "ST"  onKeyDown={this.convert}></input>
+              <br></br>
             <button onClick={this.invest} style={{ padding: '5px 10px' }}>Invest</button>
             <button onClick={this.investStableTokens} style={{ padding: '5px 10px' }}>Invest stable tokens</button>
+            Invested tokens: 12
+            <br></br>
+            Invested stable tokens: 321
           </div>
         </div>
       </div>
