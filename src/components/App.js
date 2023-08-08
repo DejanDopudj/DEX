@@ -61,10 +61,10 @@ class App extends Component {
     // await stableToken.methods.mint(10000).send({ from: accounts[1] });
 
     let stableTokenBalance = await stableToken.methods.balanceOf(this.state.account).call()
-    this.setState({stableTokenBalance: stableTokenBalance.toNumber()})
+    this.setState({stableTokenBalance: stableTokenBalance.toNumber() || 0})
     
     let tokenBalance = await token.methods.balanceOf(this.state.account).call()
-    this.setState({tokenBalance: tokenBalance.toNumber()})
+    this.setState({tokenBalance: tokenBalance.toNumber() || 0})
     
   }
 
@@ -98,16 +98,37 @@ class App extends Component {
     this.invest = this.invest.bind(this);
     this.investStableTokens = this.investStableTokens.bind(this);
     this.convert = this.convert.bind(this);
+    this.buyTokens = this.buyTokens.bind(this);
+    this.sellTokens = this.sellTokens.bind(this);
 
   }
 
+  async buyTokens(){
+    this.state.token.methods.approve(this.state.exchange.address, 1000).send({ from: this.state.account }).on('transactionHash', async (hash) => {
+      const transaction = await this.state.web3.eth.getTransaction(hash);
+      const number = transaction.input.substring(transaction.input.length - 64);
+      const decimalNumber = parseInt(number, 16);
+      this.state.exchange.methods.buyTokens(decimalNumber).send({ from: this.state.account }).on('transactionHash', (hash) => {
+      })
+    })
+  }
+
+  async sellTokens(){
+    this.state.token.methods.approve(this.state.exchange.address, 1000).send({ from: this.state.account }).on('transactionHash', async (hash) => {
+      const transaction = await this.state.web3.eth.getTransaction(hash);
+      const number = transaction.input.substring(transaction.input.length - 64);
+      const decimalNumber = parseInt(number, 16);
+      this.state.exchange.methods.sellTokens(decimalNumber).send({ from: this.state.account }).on('transactionHash', (hash) => {
+      })
+    })
+  }
 
   async invest() {
     this.state.token.methods.approve(this.state.exchange.address, 1000).send({ from: this.state.account }).on('transactionHash', async (hash) => {
       const transaction = await this.state.web3.eth.getTransaction(hash);
       const number = transaction.input.substring(transaction.input.length - 64);
       const decimalNumber = parseInt(number, 16);
-      this.state.exchange.methods.invest(1000, 0).send({ from: this.state.account }).on('transactionHash', (hash) => {
+      this.state.exchange.methods.invest(decimalNumber, 0).send({ from: this.state.account }).on('transactionHash', (hash) => {
       })
     })
   }  
@@ -141,14 +162,13 @@ class App extends Component {
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '-50%' }}>
-            <p>value 100T = {this.state.stableTokensInExchange}ST</p>
             <p>Balance: {this.state.tokenBalance} T</p>
             <p>Balance: {this.state.stableTokenBalance} ST</p>
             <button onClick={this.buyTokens} style={{ padding: '5px 10px' }}>
                 Buy T              
               </button>
             <button onClick={this.sellTokens} style={{ padding: '5px 10px' }}>
-                Buy ST              
+                Sell T              
               </button>
             <br></br>
             <input id="convertT" placeholder = "T"  onKeyDown={this.convert}></input>
