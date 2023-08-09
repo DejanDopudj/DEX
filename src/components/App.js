@@ -1,5 +1,6 @@
 import React, { Component} from 'react';
 import './App.css';
+import logo from './images/blockchain.png'
 import Web3 from 'web3'
 import Exchange from '../abis/Exchange.json'
 import Token from '../abis/Token.json'
@@ -13,6 +14,7 @@ class App extends Component {
     await this.loadWeb3()
     await this.loadAddress()
     await this.loadContracts()
+    await this.loadInvestedValue()
   }
 
   convert = async (e) => {
@@ -55,9 +57,9 @@ class App extends Component {
 
     const accounts = await web3.eth.getAccounts();
     
-    // await token.methods.mint(7000).send({ from: this.state.account });
+    // await token.methods.mint(50000).send({ from: this.state.account });
     // await token.methods.mint(10000).send({ from: accounts[1] });
-    // await stableToken.methods.mint(1000).send({ from: this.state.account });
+    // await stableToken.methods.mint(10000).send({ from: this.state.account });
     // await stableToken.methods.mint(10000).send({ from: accounts[1] });
 
     let stableTokenBalance = await stableToken.methods.balanceOf(this.state.account).call()
@@ -93,7 +95,9 @@ class App extends Component {
       exchange: {},
       isSell: false,
       tokensInExchange: 0,
-      stableTokensInExchange: 0
+      stableTokensInExchange: 0,
+      investedTokens: 0,
+      investedStableTokens: 0
     }
     this.invest = this.invest.bind(this);
     this.investStableTokens = this.investStableTokens.bind(this);
@@ -145,43 +149,84 @@ class App extends Component {
     })
   }
 
-  render() {
-    const { isSell } = this.state;
+  async loadInvestedValue(){
+    const investedTokens = await this.state.exchange.methods.getInvestedValue(0).call()
+    this.setState({investedTokens: investedTokens.toNumber() || 0})
 
+    const investedStableTokens = await this.state.exchange.methods.getInvestedValue(1).call()
+    this.setState({investedStableTokens: investedStableTokens.toNumber() || 0})
+  }
+
+  render() {
     return (
-      <div>
-   <nav className="navbar-dark fixed-top bg-dark shadow p-3">
-    <div style={{color: 'white', textAlign: 'left'}}>
-    DEX app
-    <div style={{float: 'right'}}>address: {this.state.account}</div>
-    </div>
-    
-  </nav>
-        <div>
-          DEX app
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '-50%' }}>
-            <p>Balance: {this.state.tokenBalance} T</p>
-            <p>Balance: {this.state.stableTokenBalance} ST</p>
-            <button onClick={this.buyTokens} style={{ padding: '5px 10px' }}>
-                Buy T              
-              </button>
-            <button onClick={this.sellTokens} style={{ padding: '5px 10px' }}>
-                Sell T              
-              </button>
-            <br></br>
-            <input id="convertT" placeholder = "T"  onKeyDown={this.convert}></input>
-            <input id="convertST" placeholder = "ST"  onKeyDown={this.convert}></input>
-              <br></br>
-            <button onClick={this.invest} style={{ padding: '5px 10px' }}>Invest</button>
-            <button onClick={this.investStableTokens} style={{ padding: '5px 10px' }}>Invest stable tokens</button>
-            Invested tokens: 12
-            <br></br>
-            Invested stable tokens: 321
-          </div>
-        </div>
+      <div className="main">
+      <div className="header"><img src={logo} className="logo"/><span className="header-title">DEX </span>
       </div>
+      <div className="content-wrapper">
+          <div className="content">
+              <div style={{width: "100%"}}>
+                  <h1>Buy and sell</h1>
+                  <table cellSpacing="0" cellPadding="0">
+                      <tr className="table-header">
+                          <th className="overline" colSpan={2}>Balance</th>
+                      </tr>
+                      <tr>
+                          <th className="table-small-header">Tokens</th>
+                          <th className="table-small-header">Stable tokens</th>
+                      </tr>
+                      <tr>
+                          <td>{this.state.tokenBalance}</td>
+                          <td>{this.state.stableTokenBalance}</td>
+                      </tr>
+                  </table>
+                  <div className="flex-gap-16">
+                      <button onClick={this.buyTokens}>Buy tokens</button>
+                      <button onClick={this.sellTokens}>Sell tokens</button>
+                  </div>
+              </div>
+              <hr/>
+              <div>
+                  <h1>Exchange rate</h1>
+                  <p>Automatically convert tokens to stable tokens, and vice versa.</p>
+                  <div className="flex-gap-16">
+                      <div className="input-wrapper">
+                          <label className="overline">Tokens</label>
+                          <input id="convertT" type="number" min={0} onKeyDown={this.convert}/>
+                      </div>
+                      <div className="input-wrapper">
+                          <label className="overline">Stable tokens</label>
+                          <input id="convertST" type="number" min={0} onKeyDown={this.convert}/>
+                      </div>
+                  </div>
+              </div>
+              <hr/>
+              <div style={{width: "100%"}}>
+                  <h1>Invest</h1>
+                  <table cellSpacing="0" cellPadding="0">
+                      <tr className="table-header">
+                          <th className="overline" colSpan={2}>Invested</th>
+                      </tr>
+                      <tr>
+                          <th className="table-small-header" >Tokens</th>
+                          <th className="table-small-header">Stable tokens</th>
+                      </tr>
+                      <tr>
+                          <td>{this.state.investedTokens}</td>
+                          <td>{this.state.investedStableTokens}</td>
+                      </tr>
+                  </table>
+                  <div className="flex-gap-16">
+                      <button onClick={this.invest}>Invest tokens</button>
+                      <button onClick={this.investStableTokens}>Invest stable tokens</button>
+                  </div>
+              </div>
+              <hr/>
+
+              <div className="notes"><span className="note">* All values represented ... ono 10<sup>-18</sup></span>
+                  <span className="note">** There is a 5% surcharge applied to all transactions.</span></div>
+          </div>
+      </div>
+  </div>
     );
   }
 }

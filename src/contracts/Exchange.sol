@@ -77,6 +77,10 @@ contract Exchange{
         tokenInvestments[_tokenName].totalInvestment += _amount;
     }    
 
+    function getInvestedValue(uint _tokenName) public returns (uint256){
+        return tokenInvestments[_tokenName].investments[msg.sender];
+    }
+
     function sayHello() view public returns (address) {
         return tokenInvestments[0].investors[0];
     }
