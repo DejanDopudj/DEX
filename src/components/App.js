@@ -19,8 +19,6 @@ class App extends Component {
 
   convert = async (e) => {
     if (e.key === 'Enter') {
-      console.log(e.target.id,"EWQEQWLJI:WQELKWEQQ")
-      console.log('do validate');
       
       const value = document.getElementById(e.target.id).value;
       
@@ -39,10 +37,16 @@ class App extends Component {
   }
 
   async loadAddress(){
-    const web3 = window.web3
-    const accounts = await web3.eth.getAccounts();
-    this.setState({account: accounts[0]})
-    console.log(this.state.account)
+    
+    await window.ethereum.enable();
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const account = accounts[0];
+    var that = this;
+    this.setState({account: accounts[0]});
+     window.ethereum.on('accountsChanged', function (accounts) {
+      that.setState({account: accounts[0]})
+        window.location.reload();
+       });
   }
 
   async loadContracts(){
@@ -54,13 +58,6 @@ class App extends Component {
     this.setState({stableToken})
     const exchange = new web3.eth.Contract(Exchange.abi, Exchange.networks['5777'].address)
     this.setState({exchange})
-
-    const accounts = await web3.eth.getAccounts();
-    
-    // await token.methods.mint(50000).send({ from: this.state.account });
-    // await token.methods.mint(10000).send({ from: accounts[1] });
-    // await stableToken.methods.mint(10000).send({ from: this.state.account });
-    // await stableToken.methods.mint(10000).send({ from: accounts[1] });
 
     let stableTokenBalance = await stableToken.methods.balanceOf(this.state.account).call()
     this.setState({stableTokenBalance: stableTokenBalance.toNumber() || 0})
@@ -80,6 +77,7 @@ class App extends Component {
       window.web3 = new Web3(window.web3.currentProvider);
       this.state.web3 = window.web3;
     }
+    
   }
 
   constructor(props) {
@@ -108,7 +106,8 @@ class App extends Component {
   }
 
   async buyTokens(){
-    this.state.token.methods.approve(this.state.exchange.address, 1000).send({ from: this.state.account }).on('transactionHash', async (hash) => {
+    this.state.stableToken.methods.approve(this.state.exchange.address, 1000
+      ).send({ from: this.state.account }).on('transactionHash', async (hash) => {
       const transaction = await this.state.web3.eth.getTransaction(hash);
       const number = transaction.input.substring(transaction.input.length - 64);
       const decimalNumber = parseInt(number, 16);
@@ -118,7 +117,8 @@ class App extends Component {
   }
 
   async sellTokens(){
-    this.state.token.methods.approve(this.state.exchange.address, 1000).send({ from: this.state.account }).on('transactionHash', async (hash) => {
+    this.state.token.methods.approve(this.state.exchange.address, 1000
+      ).send({ from: this.state.account }).on('transactionHash', async (hash) => {
       const transaction = await this.state.web3.eth.getTransaction(hash);
       const number = transaction.input.substring(transaction.input.length - 64);
       const decimalNumber = parseInt(number, 16);
@@ -132,7 +132,7 @@ class App extends Component {
       const transaction = await this.state.web3.eth.getTransaction(hash);
       const number = transaction.input.substring(transaction.input.length - 64);
       const decimalNumber = parseInt(number, 16);
-      this.state.exchange.methods.invest(decimalNumber, 0).send({ from: this.state.account }).on('transactionHash', (hash) => {
+      const x = await this.state.exchange.methods.invest(decimalNumber, 0).send({ from: this.state.account }).on('transactionHash', (hash) => {
       })
     })
   }  
@@ -150,10 +150,10 @@ class App extends Component {
   }
 
   async loadInvestedValue(){
-    const investedTokens = await this.state.exchange.methods.getInvestedValue(0).call()
+    const investedTokens = await this.state.exchange.methods.getInvestedValue(0).call({ from: this.state.account })
     this.setState({investedTokens: investedTokens.toNumber() || 0})
 
-    const investedStableTokens = await this.state.exchange.methods.getInvestedValue(1).call()
+    const investedStableTokens = await this.state.exchange.methods.getInvestedValue(1).call({ from: this.state.account })
     this.setState({investedStableTokens: investedStableTokens.toNumber() || 0})
   }
 
@@ -167,6 +167,7 @@ class App extends Component {
               <div style={{width: "100%"}}>
                   <h1>Buy and sell</h1>
                   <table cellSpacing="0" cellPadding="0">
+                  <tbody>
                       <tr className="table-header">
                           <th className="overline" colSpan={2}>Balance</th>
                       </tr>
@@ -178,6 +179,7 @@ class App extends Component {
                           <td>{this.state.tokenBalance}</td>
                           <td>{this.state.stableTokenBalance}</td>
                       </tr>
+                      </tbody>
                   </table>
                   <div className="flex-gap-16">
                       <button onClick={this.buyTokens}>Buy tokens</button>
@@ -203,6 +205,7 @@ class App extends Component {
               <div style={{width: "100%"}}>
                   <h1>Invest</h1>
                   <table cellSpacing="0" cellPadding="0">
+                    <tbody>
                       <tr className="table-header">
                           <th className="overline" colSpan={2}>Invested</th>
                       </tr>
@@ -214,6 +217,7 @@ class App extends Component {
                           <td>{this.state.investedTokens}</td>
                           <td>{this.state.investedStableTokens}</td>
                       </tr>
+                      </tbody>
                   </table>
                   <div className="flex-gap-16">
                       <button onClick={this.invest}>Invest tokens</button>
@@ -222,8 +226,8 @@ class App extends Component {
               </div>
               <hr/>
 
-              <div className="notes"><span className="note">* All values represented ... ono 10<sup>-18</sup></span>
-                  <span className="note">** There is a 5% surcharge applied to all transactions.</span></div>
+              <div className="notes"><span className="note">* All values represented as * 10<sup>-18</sup></span>
+                  <span className="note">** Due to rounding, your desired tokens may be 1 less then expected.</span></div>
           </div>
       </div>
   </div>

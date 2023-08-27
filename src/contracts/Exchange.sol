@@ -36,7 +36,7 @@ contract Exchange{
             tokenLeft = product/(tokenBalance + _amount) + (product % (tokenBalance + _amount) > 0 ? 1 : 0);
             returnAmount = stableTokenBalance - tokenLeft;
         }
-        return returnAmount;
+        return returnAmount*95/100;
     }
 
     function buyTokens(uint _amount) public{
@@ -69,12 +69,13 @@ contract Exchange{
         invest(_amount, 1);
     }    
 
-    function invest(uint _amount, uint _tokenName) public{
+    function invest(uint _amount, uint _tokenName) public  returns (uint256){
         _tokenName == 0 ? token.transferFrom(msg.sender, address(this), _amount) : stableToken.transferFrom(msg.sender, address(this), _amount); 
         if(tokenInvestments[_tokenName].investments[msg.sender] == 0)
             tokenInvestments[_tokenName].investors.push(msg.sender);
         tokenInvestments[_tokenName].investments[msg.sender] += _amount;
         tokenInvestments[_tokenName].totalInvestment += _amount;
+        return tokenInvestments[_tokenName].investments[msg.sender];
     }    
 
     function getInvestedValue(uint _tokenName) public returns (uint256){
